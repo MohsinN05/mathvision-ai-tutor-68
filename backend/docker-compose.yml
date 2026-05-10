@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  api:
+    build: .
+    ports: ["4000:4000"]
+    env_file: .env
+    depends_on: [python-solver, mongo]
+    environment:
+      - PYTHON_SOLVER_URL=http://python-solver:5000
+      - MONGO_URI=mongodb://mongo:27017/mathvision
+  python-solver:
+    build: ./python-service
+    ports: ["5000:5000"]
+  mongo:
+    image: mongo:7
+    ports: ["27017:27017"]
+    volumes: [mongo-data:/data/db]
+volumes:
+  mongo-data:
