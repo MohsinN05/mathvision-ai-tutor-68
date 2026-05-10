@@ -7,6 +7,20 @@ import { detectEquationType } from "../utils/equation";
 
 const Body = z.object({ latex: z.string().min(1).max(500) });
 
+function logSolveRequest(requestBody: unknown, responseBody: unknown) {
+  try {
+    console.log(
+      JSON.stringify({
+        endpoint: "/api/solve",
+        request: requestBody,
+        response: responseBody,
+      }),
+    );
+  } catch {
+    console.log("Solve traffic logging failed.");
+  }
+}
+
 export const solveController = {
   /**
    * POST /api/solve
@@ -42,23 +56,35 @@ export const solveController = {
       }
 
       if (!resultLatex) {
-        return res.status(503).json({
+        const response = {
           ok: false,
           equationType,
           solverUsed: "fallback",
           error: "Solver currently unavailable",
-        });
+        };
+        logSolveRequest({ latex, equationType }, response);
+        return res.status(503).json(response);
       }
 
-      const steps = explanationEngine.build(symbolicSteps, equationType);
+      const normalizedSymbolicSteps =
+        symbolicSteps.length > 0
+          ? symbolicSteps
+          : [
+              `Input: ${latex}`,
+              `Final result: ${resultLatex}`,
+            ];
 
-      return res.json({
+      const steps = explanationEngine.build(normalizedSymbolicSteps, equationType);
+
+      const response = {
         ok: true,
         equationType,
         solverUsed,
         resultLatex,
         steps,
-      });
+      };
+      logSolveRequest({ latex, equationType }, response);
+      return res.json(response);
     } catch (err) {
       next(err);
     }

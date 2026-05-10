@@ -4,13 +4,14 @@ export interface SolutionStep {
   stepNumber: number;
   symbolic: string; // LaTeX
   explanation: string;
+  why?: string;
 }
 
 export interface SolutionRecord {
   id: string;
   latex: string;
   equationType: string;
-  solverUsed: "wolfram" | "fallback";
+  solverUsed: "sympy" | "wolfram" | "fallback";
   result: string; // LaTeX
   steps: SolutionStep[];
   createdAt: number;
