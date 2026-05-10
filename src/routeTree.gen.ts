@@ -9,51 +9,204 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppHistoryRouteImport } from './routes/_app.history'
+import { Route as AppSolveProcessingRouteImport } from './routes/_app.solve.processing'
+import { Route as AppSolveIdRouteImport } from './routes/_app.solve.$id'
+import { Route as AppSolveIdFullRouteImport } from './routes/_app.solve.$id.full'
+import { Route as AppSolveIdExplainRouteImport } from './routes/_app.solve.$id.explain'
 
-const IndexRoute = IndexRouteImport.update({
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHistoryRoute = AppHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSolveProcessingRoute = AppSolveProcessingRouteImport.update({
+  id: '/solve/processing',
+  path: '/solve/processing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSolveIdRoute = AppSolveIdRouteImport.update({
+  id: '/solve/$id',
+  path: '/solve/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSolveIdFullRoute = AppSolveIdFullRouteImport.update({
+  id: '/full',
+  path: '/full',
+  getParentRoute: () => AppSolveIdRoute,
+} as any)
+const AppSolveIdExplainRoute = AppSolveIdExplainRouteImport.update({
+  id: '/explain',
+  path: '/explain',
+  getParentRoute: () => AppSolveIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
+  '/history': typeof AppHistoryRoute
+  '/solve/$id': typeof AppSolveIdRouteWithChildren
+  '/solve/processing': typeof AppSolveProcessingRoute
+  '/solve/$id/explain': typeof AppSolveIdExplainRoute
+  '/solve/$id/full': typeof AppSolveIdFullRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/history': typeof AppHistoryRoute
+  '/': typeof AppIndexRoute
+  '/solve/$id': typeof AppSolveIdRouteWithChildren
+  '/solve/processing': typeof AppSolveProcessingRoute
+  '/solve/$id/explain': typeof AppSolveIdExplainRoute
+  '/solve/$id/full': typeof AppSolveIdFullRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/history': typeof AppHistoryRoute
+  '/_app/': typeof AppIndexRoute
+  '/_app/solve/$id': typeof AppSolveIdRouteWithChildren
+  '/_app/solve/processing': typeof AppSolveProcessingRoute
+  '/_app/solve/$id/explain': typeof AppSolveIdExplainRoute
+  '/_app/solve/$id/full': typeof AppSolveIdFullRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/history'
+    | '/solve/$id'
+    | '/solve/processing'
+    | '/solve/$id/explain'
+    | '/solve/$id/full'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/history'
+    | '/'
+    | '/solve/$id'
+    | '/solve/processing'
+    | '/solve/$id/explain'
+    | '/solve/$id/full'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/_app/history'
+    | '/_app/'
+    | '/_app/solve/$id'
+    | '/_app/solve/processing'
+    | '/_app/solve/$id/explain'
+    | '/_app/solve/$id/full'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/history': {
+      id: '/_app/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AppHistoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/solve/processing': {
+      id: '/_app/solve/processing'
+      path: '/solve/processing'
+      fullPath: '/solve/processing'
+      preLoaderRoute: typeof AppSolveProcessingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/solve/$id': {
+      id: '/_app/solve/$id'
+      path: '/solve/$id'
+      fullPath: '/solve/$id'
+      preLoaderRoute: typeof AppSolveIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/solve/$id/full': {
+      id: '/_app/solve/$id/full'
+      path: '/full'
+      fullPath: '/solve/$id/full'
+      preLoaderRoute: typeof AppSolveIdFullRouteImport
+      parentRoute: typeof AppSolveIdRoute
+    }
+    '/_app/solve/$id/explain': {
+      id: '/_app/solve/$id/explain'
+      path: '/explain'
+      fullPath: '/solve/$id/explain'
+      preLoaderRoute: typeof AppSolveIdExplainRouteImport
+      parentRoute: typeof AppSolveIdRoute
     }
   }
 }
 
+interface AppSolveIdRouteChildren {
+  AppSolveIdExplainRoute: typeof AppSolveIdExplainRoute
+  AppSolveIdFullRoute: typeof AppSolveIdFullRoute
+}
+
+const AppSolveIdRouteChildren: AppSolveIdRouteChildren = {
+  AppSolveIdExplainRoute: AppSolveIdExplainRoute,
+  AppSolveIdFullRoute: AppSolveIdFullRoute,
+}
+
+const AppSolveIdRouteWithChildren = AppSolveIdRoute._addFileChildren(
+  AppSolveIdRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppHistoryRoute: typeof AppHistoryRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppSolveIdRoute: typeof AppSolveIdRouteWithChildren
+  AppSolveProcessingRoute: typeof AppSolveProcessingRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppHistoryRoute: AppHistoryRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppSolveIdRoute: AppSolveIdRouteWithChildren,
+  AppSolveProcessingRoute: AppSolveProcessingRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
