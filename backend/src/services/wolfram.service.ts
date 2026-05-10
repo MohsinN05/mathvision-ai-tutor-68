@@ -4,7 +4,7 @@ interface WolframPod { title: string; subpods?: Array<{ plaintext?: string }>; }
 
 export const wolframSolver = {
   async solve({ latex }: { latex: string }) {
-    const appId = process.env.WOLFRAM_APP_ID;
+    const appId = process.env.K2X7RW7V86;
     if (!appId) return { ok: false as const };
 
     const query = latexToQuery(latex);
