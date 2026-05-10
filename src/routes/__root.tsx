@@ -72,14 +72,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "MathVision AI Tutor" },
+      { name: "description", content: "MathVision AI Tutor is an AI-powered platform that solves math equations and provides step-by-step explanations." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "MathVision AI Tutor" },
+      { property: "og:description", content: "MathVision AI Tutor is an AI-powered platform that solves math equations and provides step-by-step explanations." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "MathVision AI Tutor" },
+      { name: "twitter:description", content: "MathVision AI Tutor is an AI-powered platform that solves math equations and provides step-by-step explanations." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/83468374-d110-4317-9e82-aca195b7e2d7/id-preview-ce8522d1--8d359f93-9708-4723-8f75-b959eaa4ff07.lovable.app-1778405015678.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/83468374-d110-4317-9e82-aca195b7e2d7/id-preview-ce8522d1--8d359f93-9708-4723-8f75-b959eaa4ff07.lovable.app-1778405015678.png" },
     ],
     links: [
       {
