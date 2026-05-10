@@ -24,6 +24,7 @@ interface SolutionStore {
   setCurrent: (s: SolutionRecord | null) => void;
   pushHistory: (s: SolutionRecord) => void;
   toggleSaved: (id: string) => void;
+  clearHistory: () => void;
 }
 
 const KEY = "mathvision.history.v1";
@@ -48,5 +49,9 @@ export const useSolutionStore = create<SolutionStore>((set, get) => ({
     const next = get().history.map((h) => (h.id === id ? { ...h, saved: !h.saved } : h));
     save(next);
     set({ history: next });
+  },
+  clearHistory: () => {
+    save([]);
+    set({ history: [] });
   },
 }));

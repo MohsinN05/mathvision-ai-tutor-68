@@ -1,7 +1,22 @@
+import * as dotenv from "dotenv";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+
+const rootEnvPath = join(process.cwd(), ".env");
+dotenv.config({ path: rootEnvPath });
+
+if (!process.env.WOLFRAM_APP_ID) {
+  const backendEnvPath = join(process.cwd(), "backend", ".env");
+  if (existsSync(backendEnvPath)) {
+    dotenv.config({ path: backendEnvPath, override: false });
+  }
+}
+
+console.log("WOLFRAM_APP_ID loaded:", !!process.env.WOLFRAM_APP_ID);
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;

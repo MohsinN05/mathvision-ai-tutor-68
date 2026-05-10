@@ -3,6 +3,7 @@ import { Bookmark } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { MathRender } from "@/components/MathRender";
 import { useSolutionStore } from "@/lib/store";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_app/history")({
   head: () => ({ meta: [{ title: "History — MathVision" }] }),
@@ -11,14 +12,26 @@ export const Route = createFileRoute("/_app/history")({
 
 function HistoryPage() {
   const history = useSolutionStore((s) => s.history);
+  const { isAuthenticated } = useAuth();
 
   return (
     <>
       <AppHeader />
       <h1 className="mt-2 font-display text-2xl font-bold">History</h1>
-      <p className="text-sm text-muted-foreground">Your recent solutions, saved on this device.</p>
+      <p className="text-sm text-muted-foreground">
+        {isAuthenticated
+          ? "Your recent solutions, saved on this device."
+          : "Sign in to see your saved history. Nothing is retained for guests."}
+      </p>
 
-      {history.length === 0 ? (
+      {!isAuthenticated ? (
+        <div className="glass-card mt-6 p-8 text-center">
+          <p className="text-sm text-muted-foreground">You must sign in to save and view history.</p>
+          <Link to="/auth/login" className="btn-gradient mt-4 inline-flex rounded-full px-5 py-2 text-sm font-semibold">
+            Sign in
+          </Link>
+        </div>
+      ) : history.length === 0 ? (
         <div className="glass-card mt-6 p-8 text-center">
           <p className="text-sm text-muted-foreground">Nothing here yet.</p>
           <Link to="/" className="btn-gradient mt-4 inline-flex rounded-full px-5 py-2 text-sm font-semibold">

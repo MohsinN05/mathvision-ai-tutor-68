@@ -47,7 +47,7 @@ export const solveController = {
       }
 
       if (!resultLatex) {
-        const wf = await wolframSolver.solve({ latex });
+        const wf = await wolframSolver.solve({ latex, equationType });
         if (wf.ok) {
           solverUsed = "wolfram";
           resultLatex = wf.resultLatex;

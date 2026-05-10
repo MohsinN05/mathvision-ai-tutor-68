@@ -4,6 +4,7 @@ import { Camera, Sparkles, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { AppHeader } from "@/components/AppHeader";
 import { MathRender } from "@/components/MathRender";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_app/")({
   head: () => ({
@@ -36,6 +37,8 @@ function SolverHome() {
       search: { q: v },
     });
   };
+
+  const { isAuthenticated } = useAuth();
 
   return (
     <>
@@ -103,12 +106,17 @@ function SolverHome() {
         </div>
       </section>
 
-      <section className="glass-card mt-8 flex flex-col items-center gap-3 p-5 text-center">
-        <p className="text-sm text-muted-foreground">Sign in to save your work.</p>
-        <button className="btn-gradient rounded-full px-6 py-2 text-sm font-semibold">
-          Sign in
-        </button>
-      </section>
+      {isAuthenticated ? null : (
+        <section className="glass-card mt-8 flex flex-col items-center gap-3 p-5 text-center">
+          <p className="text-sm text-muted-foreground">Sign in to save your work.</p>
+          <button
+            onClick={() => navigate({ to: "/auth/login" })}
+            className="btn-gradient rounded-full px-6 py-2 text-sm font-semibold"
+          >
+            Sign in
+          </button>
+        </section>
+      )}
     </>
   );
 }

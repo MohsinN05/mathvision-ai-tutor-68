@@ -3,7 +3,7 @@ import axios from "axios";
 interface WolframPod { title: string; subpods?: Array<{ plaintext?: string }>; }
 
 export const wolframSolver = {
-  async solve({ latex }: { latex: string }) {
+  async solve({ latex, equationType }: { latex: string; equationType?: string }) {
     const appId = process.env.WOLFRAM_APP_ID;
     if (!appId) {
       // eslint-disable-next-line no-console
@@ -74,6 +74,17 @@ export const wolframSolver = {
           resultLatex = fallbackPod?.subpods?.[0]?.plaintext?.trim() ?? "";
         }
 
+        // Reorder steps for better pedagogical flow
+        const originalSteps = [...steps];
+        steps = reorderStepsForEquationType(steps, equationType, latex);
+        // eslint-disable-next-line no-console
+        console.log(JSON.stringify({
+          event: "wolfram-steps-reordered",
+          equationType,
+          originalSteps,
+          reorderedSteps: steps
+        }));
+
         return { ok: true as const, resultLatex, steps };
       } catch (e) {
         lastErr = e instanceof Error ? e.message : "fetch failed";
@@ -84,6 +95,73 @@ export const wolframSolver = {
     return { ok: false as const, error: lastErr };
   },
 };
+
+function reorderStepsForEquationType(steps: string[], equationType: string = "unknown", originalLatex?: string): string[] {
+  if (equationType === "quadratic") {
+    return reorderQuadraticSteps(steps, originalLatex);
+  }
+  // For other equation types, return as-is for now
+  return steps;
+}
+
+function reorderQuadraticSteps(steps: string[], originalLatex?: string): string[] {
+  const reordered: string[] = [];
+  const solutions: string[] = [];
+  let factoredForm = "";
+  const intermediateSteps: string[] = [];
+
+  // First pass: categorize steps
+  for (const step of steps) {
+    const cleanStep = step.trim();
+    if (/\(x[^)]+\)\s*\(x[^)]+\)\s*=\s*0/.test(cleanStep)) {
+      // Factored form like (x-3)(x-2) = 0
+      factoredForm = cleanStep;
+    } else if (/^x\s*=\s*[-]?\d*\.?\d+$/.test(cleanStep)) {
+      // Solutions like x = 2, x = 3, x = -1, x = 1.5
+      solutions.push(cleanStep);
+    } else if (cleanStep.includes('=') && !cleanStep.includes('^2 - 1/4')) {
+      // Other equations that aren't the completing the square step
+      intermediateSteps.push(cleanStep);
+    } else {
+      // Everything else (including completing the square)
+      intermediateSteps.push(cleanStep);
+    }
+  }
+
+  // Add original equation first if we have it
+  if (originalLatex) {
+    // Convert LaTeX to plain text format for consistency
+    const plainOriginal = latexToPlainEquation(originalLatex);
+    if (!steps.some(s => s.includes(plainOriginal) || plainOriginal.includes(s))) {
+      reordered.push(plainOriginal);
+    }
+  }
+
+  // Add factored form if we have it
+  if (factoredForm) {
+    reordered.push(factoredForm);
+  }
+
+  // Add intermediate steps
+  reordered.push(...intermediateSteps.filter(s => s !== factoredForm));
+
+  // Add solutions at the end
+  if (solutions.length > 0) {
+    reordered.push(...solutions);
+  }
+
+  // If we don't have a good reordering, return original
+  return reordered.length > 0 ? reordered : steps;
+}
+
+function latexToPlainEquation(latex: string): string {
+  return latex
+    .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, "($1)/($2)")
+    .replace(/\\sqrt\{([^}]+)\}/g, "sqrt($1)")
+    .replace(/\\cdot/g, "*")
+    .replace(/[{}]/g, "")
+    .trim();
+}
 
 function latexToQuery(s: string) {
   return s

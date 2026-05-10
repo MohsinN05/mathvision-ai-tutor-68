@@ -21,6 +21,15 @@ export const EquationHistory = mongoose.models.EquationHistory ||
 
 export async function connectMongo() {
   const uri = process.env.MONGO_URI;
-  if (!uri) return;
-  if (mongoose.connection.readyState === 0) await mongoose.connect(uri);
+  if (!uri) {
+    // eslint-disable-next-line no-console
+    console.warn("MONGO_URI is not set. MongoDB connection skipped.");
+    return;
+  }
+
+  if (mongoose.connection.readyState === 0) {
+    await mongoose.connect(uri);
+    // eslint-disable-next-line no-console
+    console.log("MongoDB connected.");
+  }
 }

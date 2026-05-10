@@ -7,6 +7,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { MathRender } from "@/components/MathRender";
 import { solveEquation } from "@/lib/solver.functions";
 import { useSolutionStore, type SolutionRecord } from "@/lib/store";
+import { useAuth } from "@/hooks/use-auth";
 
 const search = z.object({
   q: z.string().min(1),
@@ -30,13 +31,16 @@ function ProcessingPage() {
   const { q } = Route.useSearch();
   const navigate = useNavigate();
   const { setCurrent, pushHistory } = useSolutionStore();
+  const { isAuthenticated } = useAuth();
   const [stage, setStage] = useState(0);
 
   const stageTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const persistAndOpenResult = (record: SolutionRecord) => {
     setCurrent(record);
-    pushHistory(record);
+    if (isAuthenticated) {
+      pushHistory(record);
+    }
     if (stageTimerRef.current) clearInterval(stageTimerRef.current);
     setStage(STAGES.length);
     queueMicrotask(() => {
