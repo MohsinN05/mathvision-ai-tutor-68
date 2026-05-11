@@ -26,7 +26,7 @@ const Input = z.object({ latex: z.string().min(1).max(500) });
  * This mirrors the REST contract exposed by /backend/src/controllers/solve.controller.ts
  * so a future mobile app can swap base URL without changing UI code.
  */
-const solveServerFn = createServerFn({ method: "POST" })
+export const solveServerFn = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => Input.parse(data))
   .handler(async ({ data }): Promise<SolveResult> => {
     const equationType = detectEquationType(data.latex);
