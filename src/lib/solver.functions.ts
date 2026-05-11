@@ -84,20 +84,7 @@ export const solveServerFn = createServerFn({ method: "POST" })
               .filter(Boolean),
           ) ?? [];
 
-        const escape = (s: string) =>
-          s.replace(/\\/g, "\\\\").replace(/\{/g, "\\{").replace(/\}/g, "\\}");
-
-        const steps = stepLines.length
-          ? stepLines.map((line, i) => ({
-              stepNumber: i + 1,
-              symbolic: `\\text{${escape(line)}}`,
-              explanation: line,
-            }))
-          : pods.slice(0, 4).map((pod, i) => ({
-              stepNumber: i + 1,
-              symbolic: `\\text{${escape(pod.title)}}`,
-              explanation: pod.subpods?.[0]?.plaintext ?? pod.title,
-            }));
+        const steps = buildSteps(stepLines, resultText);
 
         return {
           ok: true,
