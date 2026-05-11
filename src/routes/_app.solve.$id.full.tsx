@@ -125,13 +125,20 @@ function FullPage() {
             <div className="mt-3 overflow-x-auto rounded-3xl border border-border bg-surface p-4">
               <MathRender tex={s.symbolic} display className="text-base" />
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{s.explanation}</p>
-            {s.why ? (
-              <div className="mt-3 rounded-3xl border border-border bg-surface p-4 text-sm text-muted-foreground">
-                <div className="font-semibold text-foreground">Why this step matters</div>
-                <p className="mt-2">{s.why}</p>
-              </div>
-            ) : null}
+          </li>
+        ))}
+      </ol>
+
+      <div className="mt-4 text-center text-xs text-muted-foreground">
+        Need reasoning behind each step?{" "}
+        <Link to="/solve/$id/explain" params={{ id: record.id }} className="text-primary underline">
+          Open the explanation view
+        </Link>
+        .
+      </div>
+
+      {/* hidden placeholder to keep map structure stable */}
+      {false ? <span /> : null}
           </li>
         ))}
       </ol>
