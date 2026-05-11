@@ -18,6 +18,71 @@ interface WolframPod {
 
 const Input = z.object({ latex: z.string().min(1).max(500) });
 
+/** Convert Wolfram plaintext math to KaTeX-friendly LaTeX. */
+function plainToLatex(s: string): string {
+  let t = s;
+  // sqrt(x) -> \sqrt{x}
+  t = t.replace(/sqrt\(([^()]+)\)/g, "\\sqrt{$1}");
+  // (a)/(b) or a/b stays as-is for KaTeX inline; convert top-level fractions like "a/b"
+  // log, sin, cos, tan, ln -> add backslash
+  t = t.replace(/\b(log|ln|sin|cos|tan|sec|csc|cot|exp|lim)\b/g, "\\$1");
+  // <=, >=, !=
+  t = t.replace(/<=/g, "\\le ").replace(/>=/g, "\\ge ").replace(/!=/g, "\\ne ");
+  // " or " -> ",\;\text{or}\;"
+  t = t.replace(/\s+or\s+/gi, ",\\;\\text{or}\\;");
+  // implicit multiplication: "5 x" -> "5x"
+  t = t.replace(/(\d)\s+([a-zA-Z\\])/g, "$1$2");
+  // collapse spaces
+  t = t.replace(/\s{2,}/g, " ").trim();
+  return t;
+}
+
+const NOISE_RE =
+  /^(step.?by.?step|possible intermediate steps|hint|answer|enlarge|data|customer|computing|input(?: interpretation)?|result|solution)s?\s*:?$/i;
+
+function isMathy(line: string): boolean {
+  // contains operator/equality AND at least one digit or single letter variable
+  return /[=+\-^/]|\\cdot/.test(line) && /[A-Za-z0-9]/.test(line) && !/[.!?]\s*$/.test(line);
+}
+
+function buildSteps(
+  lines: string[],
+  fallbackResult: string,
+): Array<{ stepNumber: number; symbolic: string; explanation: string }> {
+  const cleaned = lines.filter((l) => l && !NOISE_RE.test(l) && l !== "...");
+
+  const grouped: Array<{ symbolic: string; explanation: string }> = [];
+  let pendingDesc = "";
+
+  for (const raw of cleaned) {
+    const line = raw.replace(/\s*\|\s*/g, " ").trim();
+    if (isMathy(line)) {
+      grouped.push({
+        symbolic: plainToLatex(line),
+        explanation: pendingDesc || "Simplify both sides of the equation.",
+      });
+      pendingDesc = "";
+    } else {
+      const desc = line.replace(/:$/, "").trim();
+      pendingDesc = pendingDesc ? `${pendingDesc} ${desc}` : desc;
+    }
+  }
+
+  if (!grouped.length && fallbackResult) {
+    grouped.push({
+      symbolic: plainToLatex(fallbackResult),
+      explanation: "Final result returned by the solver.",
+    });
+  }
+
+  // dedupe consecutive identical symbolic lines
+  const deduped = grouped.filter(
+    (g, i) => i === 0 || g.symbolic !== grouped[i - 1].symbolic,
+  );
+
+  return deduped.map((g, i) => ({ stepNumber: i + 1, ...g }));
+}
+
 /**
  * Solve equation server-side inside the Lovable Worker.
  * Calls Wolfram Alpha directly with WOLFRAM_APP_ID (loaded from backend/.env
@@ -84,20 +149,7 @@ export const solveServerFn = createServerFn({ method: "POST" })
               .filter(Boolean),
           ) ?? [];
 
-        const escape = (s: string) =>
-          s.replace(/\\/g, "\\\\").replace(/\{/g, "\\{").replace(/\}/g, "\\}");
-
-        const steps = stepLines.length
-          ? stepLines.map((line, i) => ({
-              stepNumber: i + 1,
-              symbolic: `\\text{${escape(line)}}`,
-              explanation: line,
-            }))
-          : pods.slice(0, 4).map((pod, i) => ({
-              stepNumber: i + 1,
-              symbolic: `\\text{${escape(pod.title)}}`,
-              explanation: pod.subpods?.[0]?.plaintext ?? pod.title,
-            }));
+        const steps = buildSteps(stepLines, resultText);
 
         return {
           ok: true,
