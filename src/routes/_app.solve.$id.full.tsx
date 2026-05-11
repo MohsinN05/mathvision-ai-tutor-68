@@ -137,11 +137,6 @@ function FullPage() {
         .
       </div>
 
-      {/* hidden placeholder to keep map structure stable */}
-      {false ? <span /> : null}
-          </li>
-        ))}
-      </ol>
 
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <button onClick={handleDownload} className="glass-card flex h-12 items-center justify-center gap-2 rounded-full text-sm font-semibold">
