@@ -40,21 +40,22 @@ export function CompleteSignupForm() {
     }
   }, [token, email, navigate]);
 
-  const onSubmit = (data: CompleteSignupForm) => {
+  const onSubmit = async (data: CompleteSignupForm) => {
     if (!token || !email) return;
 
     clearError();
-    completeSignup({
-      email,
-      password: data.password,
-      name: data.name,
-      token,
-    }, {
-      onSuccess: () => {
-        setShowSuccess(true);
-        setTimeout(() => navigate({ to: "/" }), 1500);
-      },
-    });
+    try {
+      await completeSignup({
+        email,
+        password: data.password,
+        name: data.name,
+        token,
+      });
+      setShowSuccess(true);
+      setTimeout(() => navigate({ to: "/" }), 1500);
+    } catch {
+      // error surfaced via auth store
+    }
   };
 
   if (!token || !email) {
